@@ -3,8 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 
-// require('./schedulers');
-// require('./revert-scheduler');
+require('./schedulers');
+require('./revert-scheduler');
 
 const PORT = process.env.PORT || 3000;
 

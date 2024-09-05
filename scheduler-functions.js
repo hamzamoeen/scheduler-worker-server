@@ -22,27 +22,37 @@ async function getSchedulersAtSpecificTime() {
         // Extract hour and minute
         let hour = changePricesDatetime.getHours();
         let minute = changePricesDatetime.getMinutes();
-
         let month = (changePricesDatetime.getMonth() + 1); // Returns 0-11 for January-December
         let day = changePricesDatetime.getDate();    // Returns 1-31 for the day of the month
         let year = changePricesDatetime.getFullYear(); // Returns the full year (e.g., 2023)
 
         console.log(`currentTimeInTimezone --->>> ${event.timezone}: `, currentTimeInTimezone);        
         console.log(`From DB Datetime --->>> day: ${day}, month: ${month}, year: ${year}, Hour: ${hour}, Minute: ${minute}: `);
+
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.hour()} :::  ${hour}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.minute()} :::  ${minute}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${(currentTimeInTimezone.month() + 1)} :::  ${month}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.date()} :::  ${day}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.year()} :::  ${year}`)
+
+
         return (
           currentTimeInTimezone.hour() == hour &&
           currentTimeInTimezone.minute() == minute && 
-          (currentTimeInTimezone.getMonth() + 1) == month && 
-          currentTimeInTimezone.getDate() == day && 
-          currentTimeInTimezone.getFullYear() == year 
+          (currentTimeInTimezone.month() + 1) == month && 
+          currentTimeInTimezone.date() == day && 
+          currentTimeInTimezone.year() == year 
         );
       });
   
       console.log('Matching Events ---->>> getSchedulersAtSpecificTime() :', matchingEvents);
       for (let i = 0; i < matchingEvents.length; i++) {
-        console.log("scheduler scheduler", scheduler);
         let scheduler = matchingEvents[i];
-        let session = JSON.parse(scheduler.session_data);
+        // let session = JSON.parse(scheduler.session_data);
+        let session = {
+            shop: scheduler.shop_name,
+            accessToken: scheduler.access_token
+        };
         await runSchedulerJob(session, scheduler.id);        
       }
 
@@ -65,21 +75,40 @@ async function getRevertSchedulersAtSpecificTime() {
         let changePricesDatetime = event.revert_to_original_price_datetime;
         console.log("changePricesDatetime--->", changePricesDatetime);
         if(changePricesDatetime == '') return;
+
         // Extract hour and minute
         let hour = changePricesDatetime.getHours();
         let minute = changePricesDatetime.getMinutes();
+        let month = (changePricesDatetime.getMonth() + 1); // Returns 0-11 for January-December
+        let day = changePricesDatetime.getDate();    // Returns 1-31 for the day of the month
+        let year = changePricesDatetime.getFullYear(); // Returns the full year (e.g., 2023)
+
         console.log(`getRevertSchedulersAtSpecificTime --->>> currentTimeInTimezone --->>> ${event.timezone}: `, currentTimeInTimezone);        
-        console.log(`getRevertSchedulersAtSpecificTime --->>> From DB Datetime --->>> Hour: ${hour}, Minute: ${minute}: `);
+        console.log(`getRevertSchedulersAtSpecificTime --->>> From DB Datetime --->>> day: ${day}, month: ${month}, year: ${year}, Hour: ${hour}, Minute: ${minute}: `);
+
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.hour()} :::  ${hour}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.minute()} :::  ${minute}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${(currentTimeInTimezone.month() + 1)} :::  ${month}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.date()} :::  ${day}`)
+        console.log(`Check Condition of currentTieInTimeZone = DBPriceDateTime: ${currentTimeInTimezone.year()} :::  ${year}`)
+
         return (
           currentTimeInTimezone.hour() == hour &&
-          currentTimeInTimezone.minute() == minute
+          currentTimeInTimezone.minute() == minute && 
+          (currentTimeInTimezone.month() + 1) == month && 
+          currentTimeInTimezone.date() == day && 
+          currentTimeInTimezone.year() == year 
         );
       });
   
       console.log('Matching Events ---->> getRevertSchedulersAtSpecificTime() :', matchingEvents);
       for (let i = 0; i < matchingEvents.length; i++) {
         let scheduler = matchingEvents[i];
-        let session = JSON.parse(scheduler.session_data);
+        // let session = JSON.parse(scheduler.session_data);
+        let session = {
+            shop: scheduler.shop_name,
+            accessToken: scheduler.access_token
+        };
         await runRevertSchedulerJob(session, scheduler.id);        
       }
 

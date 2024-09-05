@@ -12,7 +12,7 @@ async function runScheduler() {
 cron.schedule('* * * * *', async () => {
   try {
     const currentTimeInTimezone = moment().tz('Asia/Karachi');
-    console.log("currentTimeInTimezone ---->>> ", currentTimeInTimezone);
+    console.log("scheduler.js --->>> currentTimeInTimezone ---->>> ", currentTimeInTimezone);
     await runScheduler();
   } catch (error) {
     console.error('Error in cron job:', error);
