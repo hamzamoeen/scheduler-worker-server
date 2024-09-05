@@ -10,7 +10,9 @@ async function getSchedulersAtSpecificTime() {
       // Establish the database connection
       let sql = `SELECT * FROM schedulers WHERE scheduler_status = 'scheduled' and change_prices_datetime IS NOT NULL `;
       let [results] = await pool.execute(sql);
-  
+
+      console.log("Results --->> getSchedulersAtSpecificTime(): ", results);
+      
       // Filter events based on the current time in their timezone
       const matchingEvents = results.filter(event => {
         const currentTimeInTimezone = moment().tz(event.timezone);
@@ -20,23 +22,32 @@ async function getSchedulersAtSpecificTime() {
         // Extract hour and minute
         let hour = changePricesDatetime.getHours();
         let minute = changePricesDatetime.getMinutes();
+
+        let month = (changePricesDatetime.getMonth() + 1); // Returns 0-11 for January-December
+        let day = changePricesDatetime.getDate();    // Returns 1-31 for the day of the month
+        let year = changePricesDatetime.getFullYear(); // Returns the full year (e.g., 2023)
+
         console.log(`currentTimeInTimezone --->>> ${event.timezone}: `, currentTimeInTimezone);        
-        console.log(`From DB Datetime --->>> Hour: ${hour}, Minute: ${minute}: `);
+        console.log(`From DB Datetime --->>> day: ${day}, month: ${month}, year: ${year}, Hour: ${hour}, Minute: ${minute}: `);
         return (
           currentTimeInTimezone.hour() == hour &&
-          currentTimeInTimezone.minute() == minute
+          currentTimeInTimezone.minute() == minute && 
+          (currentTimeInTimezone.getMonth() + 1) == month && 
+          currentTimeInTimezone.getDate() == day && 
+          currentTimeInTimezone.getFullYear() == year 
         );
       });
   
-      console.log('Matching Events:', matchingEvents);
+      console.log('Matching Events ---->>> getSchedulersAtSpecificTime() :', matchingEvents);
       for (let i = 0; i < matchingEvents.length; i++) {
+        console.log("scheduler scheduler", scheduler);
         let scheduler = matchingEvents[i];
         let session = JSON.parse(scheduler.session_data);
         await runSchedulerJob(session, scheduler.id);        
       }
 
     } catch (error) {
-      console.error('Error occurred:', error.message);
+      console.error('Error occurred getSchedulersAtSpecificTime():', error.message);
     } finally {
         // pool.release();
     }
@@ -73,7 +84,7 @@ async function getRevertSchedulersAtSpecificTime() {
       }
 
     } catch (error) {
-      console.error('Error occurred:', error.message);
+      console.error('Error occurred getRevertSchedulersAtSpecificTime():', error.message);
     } finally {
         // pool.release();
     }
@@ -268,7 +279,7 @@ async function runSchedulerJob(session, scheduler_id) {
         throw new Error("Scheduler ID is required.");
     }
 
-    await updateSchedulerStatus(scheduler_id, {scheduler_status: 'inProgress'});
+    // await updateSchedulerStatus(scheduler_id, {scheduler_status: 'inProgress'});
 
     let scheduler = await getSchedulerJobs(session, scheduler_id);
     if (!scheduler?.length) {
@@ -281,7 +292,7 @@ async function runSchedulerJob(session, scheduler_id) {
     if (scheduledProducts?.length) {
         const uniqueProductIds = await uniqueByShopifyProductId(scheduledProducts);
         await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedTags, 'add');
-        // await updateVariantPrice(session, scheduledProducts, 'update');
+        await updateVariantPrice(session, scheduledProducts, 'update');
         await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedRemovedTags, 'remove');
     }
 
