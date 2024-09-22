@@ -35,12 +35,12 @@ const worker = new Worker(
     async job => {
         const { jobId } = job.data;
         
-        if (job.name === 'scheduleUpdateJob') {
+        if (job.name == 'scheduleUpdateJob') {
             console.log(`Processing scheduled update for job ${jobId} at ${new Date().toISOString()}`);
             await runScheduledUpdateTask(jobId);  // Run the product update task
         }
 
-        if (job.name === 'revertUpdateJob') {
+        if (job.name == 'revertUpdateJob') {
             console.log(`Processing revert for job ${jobId} at ${new Date().toISOString()}`);
             await runRevertUpdateTask(jobId);  // Run the revert task
         }
