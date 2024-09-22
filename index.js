@@ -1,13 +1,32 @@
+const express = require('express');
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const { getSchedulerJobByID, runSchedulerJob, runRevertSchedulerJob } = require('./scheduler-functions-for-redis');
 
+const app = express();
+
+// require('./schedulers');
+// require('./revert-scheduler');
+
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
 // Redis connection
 const redisConnectionUrl = process.env.REDIS_URL || 'rediss://default:VJktXv52bNTZZB6ilOdY4ojkruZqmHwUv6mAJccd1CDrurowRQOFmkca8GLikizq@so89sw.stackhero-network.com:10008';
 const redisOptions = {
-    maxRetriesPerRequest: 3, // Required by BullMQ
+    maxRetriesPerRequest: null, // Required by BullMQ
 };
 
+
+console.log("redisConnectionUrl:: ",redisConnectionUrl);
 const redis = new Redis(redisConnectionUrl, redisOptions);
 
 // Create the worker to process both 'scheduleUpdateJob' and 'revertUpdateJob'
@@ -69,19 +88,3 @@ async function runRevertUpdateTask(jobId) {
 
 
 // require('dotenv').config();
-
-// const express = require('express');
-// const app = express();
-
-// require('./schedulers');
-// require('./revert-scheduler');
-
-// const PORT = process.env.PORT || 3000;
-
-// app.get('/', (req, res) => {
-//   res.send('Hello, World!');
-// });
-
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
