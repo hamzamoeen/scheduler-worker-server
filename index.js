@@ -64,8 +64,8 @@ async function runScheduledUpdateTask(jobId) {
     console.log(`data for JobId = ${jobId} ----->>>> runScheduledUpdateTask(): `, data);
     if(data?.length > 0){
         let session = {
-            shop: data?.shop_name,
-            accessToken: data?.access_token
+            shop: data[0]?.shop_name,
+            accessToken: data[0]?.access_token
         };        
         await runSchedulerJob(session, jobId);
     }
@@ -77,8 +77,8 @@ async function runRevertUpdateTask(jobId) {
     console.log(`data for JobId = ${jobId} ----->>>> runRevertUpdateTask(): `, data);
     if(data?.length > 0){
         let session = {
-            shop: data?.shop_name,
-            accessToken: data?.access_token
+            shop: data[0]?.shop_name,
+            accessToken: data[0]?.access_token
         };        
         await runRevertSchedulerJob(session, jobId);
     }
