@@ -86,6 +86,8 @@ async function getSchedulerJobs(session, scheduler_id = null) {
 
         sql += ` order by s.id desc`;
 
+        console.log("SSSSSQLE : ", revertUpdateJob);
+
         let [results] = await pool.execute(sql);
         //console.log('SQL Results:', results);
 
