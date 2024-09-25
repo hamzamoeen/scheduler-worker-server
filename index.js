@@ -5,6 +5,24 @@ const { getSchedulerJobByID, runSchedulerJob, runRevertSchedulerJob } = require(
 
 const app = express();
 
+
+
+
+
+const WebSocket = require('ws');
+const wss = new WebSocket.Server();
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.on('message', (message) => {
+    console.log(`Received message => ${message}`);
+  });
+  ws.send('Hello, you are connected');
+});
+
+
+
+
 // require('./schedulers');
 // require('./revert-scheduler');
 
