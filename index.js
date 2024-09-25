@@ -1,4 +1,4 @@
-const WebSocket = require('ws');
+// const WebSocket = require('ws');
 
 const express = require('express');
 const { Worker, Queue } = require('bullmq');
@@ -11,15 +11,15 @@ const app = express();
 
 
 
-const wss = new WebSocket.Server();
+// const wss = new WebSocket.Server();
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-  ws.on('message', (message) => {
-    console.log(`Received message => ${message}`);
-  });
-  ws.send('Hello, you are connected');
-});
+// wss.on('connection', (ws) => {
+//   console.log('Client connected');
+//   ws.on('message', (message) => {
+//     console.log(`Received message => ${message}`);
+//   });
+//   ws.send('Hello, you are connected');
+// });
 
 
 
