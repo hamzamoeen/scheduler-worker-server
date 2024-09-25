@@ -1,3 +1,5 @@
+const WebSocket = require('ws');
+
 const express = require('express');
 const { Worker, Queue } = require('bullmq');
 const Redis = require('ioredis');
@@ -9,7 +11,6 @@ const app = express();
 
 
 
-const WebSocket = require('ws');
 const wss = new WebSocket.Server();
 
 wss.on('connection', (ws) => {
