@@ -1,4 +1,4 @@
-// const WebSocket = require('ws');
+const WebSocket = require('ws');
 
 const express = require('express');
 const { Worker, Queue } = require('bullmq');
@@ -6,22 +6,6 @@ const Redis = require('ioredis');
 const { getSchedulerJobByID, runSchedulerJob, runRevertSchedulerJob } = require('./scheduler-functions-for-redis');
 
 const app = express();
-
-
-
-
-
-// const wss = new WebSocket.Server();
-
-// wss.on('connection', (ws) => {
-//   console.log('Client connected');
-//   ws.on('message', (message) => {
-//     console.log(`Received message => ${message}`);
-//   });
-//   ws.send('Hello, you are connected');
-// });
-
-
 
 
 // require('./schedulers');
@@ -33,9 +17,32 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+
+// Start Express server
+const server = app.listen(PORT || 3000, () => {
+    console.log(`Server is running on port ${PORT || 3000}`);
 });
+
+// WebSocket Server, using the same HTTP server
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+    console.log('Client connected');
+    
+    ws.on('message', (message) => {
+        console.log(`Received message: ${message}`);
+    });
+
+    ws.send('Hello, you are connected');
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+});
+
 
 
 // Redis connection
