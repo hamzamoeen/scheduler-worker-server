@@ -48,12 +48,19 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws, req) => {
     const urlParams = new URLSearchParams(req.url.split('?')[1]);
+    console.log("urlParams urlParams urlParams", urlParams);
+
     const shop = urlParams.get('shop'); // Extract shop identifier from query parameters
 
+    console.log("shop shop shop", shop);
     clients.set(shop, ws); // Store the connection
 
     ws.on('message', (message) => {
+
+
         const { action, data } = JSON.parse(message);
+
+        console.log("message message message", message);
 
         console.log(`Received message from ${shop}: ${message}`);
         // Handle messages for this specific client here
