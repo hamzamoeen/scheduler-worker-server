@@ -58,7 +58,7 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (message) => {
 
 
-        const { action, data } = JSON.parse(message);
+        // const { action, data } = JSON.parse(message);
 
         console.log("message message message", message);
 
