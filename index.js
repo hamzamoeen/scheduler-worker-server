@@ -68,9 +68,10 @@ wss.on('connection', (ws, req) => {
 
     ws.send(`Hello, you are connected with Shop: ${shop}`);
 
-    ws.on('close', () => {
+    ws.on('close', (code, reason) => {
         clients.delete(shop); // Clean up when the client disconnects
-        console.log('Client disconnected');
+        // console.log('Client disconnected');
+        console.log(`Client for shop ${shop} disconnected. Close code: ${code}, Reason: ${reason}`);
     });
 
 
