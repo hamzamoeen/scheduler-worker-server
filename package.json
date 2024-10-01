@@ -15,6 +15,7 @@
     "bullmq": "^5.13.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
     "ioredis": "^5.4.1",
     "moment-timezone": "^0.5.45",
     "mysql2": "^3.11.0",

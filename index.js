@@ -6,12 +6,26 @@ const Redis = require('ioredis');
 const { getSchedulerJobByID, runSchedulerJob, runRevertSchedulerJob } = require('./scheduler-functions-for-redis');
 
 const app = express();
+const rateLimit = require('express-rate-limit');
+
 
 
 // require('./schedulers');
 // require('./revert-scheduler');
 
+
+// Set up a rate limiter
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests, please try again later.',
+});
+
+
 const PORT = process.env.PORT || 3000;
+
+// Apply the rate limiter to all requests
+app.use(limiter);
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
@@ -27,21 +41,38 @@ const server = app.listen(PORT || 3000, () => {
 });
 
 // WebSocket Server, using the same HTTP server
+
+const clients = new Map();
+
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-    console.log('Client connected');
-    
+wss.on('connection', (ws, req) => {
+    const urlParams = new URLSearchParams(req.url.split('?')[1]);
+    const shop = urlParams.get('shop'); // Extract shop identifier from query parameters
+
+    clients.set(shop, ws); // Store the connection
+
     ws.on('message', (message) => {
-        console.log(`Received message: ${message}`);
+        const { action, data } = JSON.parse(message);
+
+        console.log(`Received message from ${shop}: ${message}`);
+        // Handle messages for this specific client here
     });
 
-    ws.send('Hello, you are connected');
+    ws.send(`Hello, you are connected with Shop: ${shop}`);
 
     ws.on('close', () => {
+        clients.delete(shop); // Clean up when the client disconnects
         console.log('Client disconnected');
     });
+
+
+    ws.on('error', (error) => {
+        console.error(`WebSocket error for ${shop}:`, error);
+    });
 });
+
+
 
 
 
