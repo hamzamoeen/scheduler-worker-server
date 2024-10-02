@@ -29,7 +29,8 @@ const PORT = process.env.PORT || 3000;
 app.use(limiter);
 
 app.get('/', (req, res) => {
-  res.send('Hello, World!');
+    runScheduledUpdateTask(407);  // Run the product update task
+    res.send('Hello, World!');
 });
 
 // app.listen(PORT, () => {
@@ -73,8 +74,6 @@ const redisOptions = {
     maxRetriesPerRequest: null, // Required by BullMQ
 };
 
-
-runScheduledUpdateTask(407);  // Run the product update task
 
 console.log("redisConnectionUrl:: ",redisConnectionUrl);
 const redis = new Redis(redisConnectionUrl, redisOptions);
