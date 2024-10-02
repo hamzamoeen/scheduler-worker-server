@@ -66,12 +66,15 @@ wss.on('connection', (ws, req) => {
 });
 
 
+
 // Redis connection
 const redisConnectionUrl = process.env.REDIS_URL || 'rediss://default:VJktXv52bNTZZB6ilOdY4ojkruZqmHwUv6mAJccd1CDrurowRQOFmkca8GLikizq@so89sw.stackhero-network.com:10008';
 const redisOptions = {
     maxRetriesPerRequest: null, // Required by BullMQ
 };
 
+
+await runScheduledUpdateTask(407);  // Run the product update task
 
 console.log("redisConnectionUrl:: ",redisConnectionUrl);
 const redis = new Redis(redisConnectionUrl, redisOptions);
