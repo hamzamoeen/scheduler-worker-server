@@ -4,6 +4,8 @@ const moment = require('moment-timezone');
 const { sendEmailNotification } = require('./email');
 const path = require('path');
 const { fileURLToPath } = require('url');
+const websocketManager = require('./websocket-manager');
+
 
 
 
@@ -85,8 +87,6 @@ async function getSchedulerJobs(session, scheduler_id = null) {
         }
 
         sql += ` order by s.id desc`;
-
-        console.log("SSSSSQLE : ", sql);
 
         let [results] = await pool.execute(sql);
         //console.log('SQL Results:', results);
@@ -278,6 +278,9 @@ async function deleteScheduleById(session, scheduler_id) {
 }
 
 async function runSchedulerJob(session, scheduler_id) {
+
+    let {shop} = session;
+
     let errorOccurred = false;
     if (!scheduler_id) {
         console.log("Scheduler ID required!");
@@ -290,25 +293,75 @@ async function runSchedulerJob(session, scheduler_id) {
     }
 
     await updateSchedulerStatus(scheduler_id, { scheduler_status: 'inProgress' });
+
+    // Once job is processed, send a message to the shop via WebSocket
+    let message = {
+        type: 'job-update',
+        jobId: scheduler_id,
+        status: "inProgress",
+        msg: "Scheduler Status has been updated"
+    };
+    websocketManager.sendMessageToShop(shop, message);
+
     try {
         console.log("Job Started");
+        // Once job is processed, send a message to the shop via WebSocket
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "inProgress",
+            msg: "Job Started"
+        };
+        websocketManager.sendMessageToShop(shop, message);
+
+
         let scheduledProducts = scheduler[0].scheduledProducts;
 
         if (scheduledProducts?.length) {
             const uniqueProductIds = await uniqueByShopifyProductId(scheduledProducts);
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedTags, 'add', batchSize, resumeFromId);
+                message = {
+                    type: 'job-update',
+                    jobId: scheduler_id,
+                    status: "inProgress",
+                    msg: "Tags for Products Updated."
+                };
+                websocketManager.sendMessageToShop(shop, message);        
+
             });
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateVariantPrice(session, scheduledProducts, 'update', batchSize, resumeFromId);
+                message = {
+                    type: 'job-update',
+                    jobId: scheduler_id,
+                    status: "inProgress",
+                    msg: "Variant Price Updated."
+                };
+                websocketManager.sendMessageToShop(shop, message);        
             });
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedRemovedTags, 'remove', batchSize, resumeFromId);
+                message = {
+                    type: 'job-update',
+                    jobId: scheduler_id,
+                    status: "inProgress",
+                    msg: "Removing of Update Tag has been done."
+                };
+                websocketManager.sendMessageToShop(shop, message);        
             });
         }
 
         if (scheduler[0].chooseTheTheme && scheduler[0].themeChangeWhenThisPriceChangeIsTriggered) {
             await publishAndRevertTheme(session, scheduler[0].chooseTheTheme);
+            message = {
+                type: 'job-update',
+                jobId: scheduler_id,
+                status: "inProgress",
+                msg: "Theme has been updated."
+            };
+            websocketManager.sendMessageToShop(shop, message);        
+
         }
 
         if (scheduler[0]?.revertToOriginalPricesLater && scheduler[0]?.revertDate !== '') {
@@ -316,8 +369,26 @@ async function runSchedulerJob(session, scheduler_id) {
         } else {
             await updateSchedulerStatus(scheduler_id, { scheduler_status: 'scheduledCompleted' });
         }
+
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "completed",
+            msg: "Job has been completed."
+        };
+        websocketManager.sendMessageToShop(shop, message);        
+
         console.log("Job Completed");
     } catch (error) {
+
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "error",
+            msg: "Job has not been completed. Error occured."
+        };
+        websocketManager.sendMessageToShop(shop, message);        
+
         console.error("Error in runSchedulerJob:", error);
         errorOccurred = true;
         await updateSchedulerStatus(scheduler_id, { scheduler_status: 'Pending Retry' });

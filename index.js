@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const websocketManager = require('./websocket-manager'); // Import the WebSocket manager
 
 const express = require('express');
 const { Worker, Queue } = require('bullmq');
@@ -41,47 +42,28 @@ const server = app.listen(PORT || 3000, () => {
 });
 
 // WebSocket Server, using the same HTTP server
-
-const clients = new Map();
-
 const wss = new WebSocket.Server({ server });
-
 wss.on('connection', (ws, req) => {
-    const urlParams = new URLSearchParams(req.url.split('?')[1]);
-    console.log("urlParams urlParams urlParams", urlParams);
-
-    const shop = urlParams.get('shop'); // Extract shop identifier from query parameters
-
-    console.log("shop shop shop", shop);
-    clients.set(shop, ws); // Store the connection
+    const shop = req.url.split('?shop=')[1];  // Assume you pass the shop in the URL
+    console.log(`Client connected for shop: ${shop}`);
+    
+    // Add the client to the manager
+    websocketManager.addClient(shop, ws);
 
     ws.on('message', (message) => {
-
-
-        // const { action, data } = JSON.parse(message);
-
-        console.log("message message message", message);
-
-        console.log(`Received message from ${shop}: ${message}`);
-        // Handle messages for this specific client here
+        console.log(`Received message from shop ${shop}: ${message}`);
     });
 
-    ws.send(`Hello, you are connected with Shop: ${shop}`);
-
-    ws.on('close', (code, reason) => {
-        clients.delete(shop); // Clean up when the client disconnects
-        // console.log('Client disconnected');
-        console.log(`Client for shop ${shop} disconnected. Close code: ${code}, Reason: ${reason}`);
+    ws.on('close', () => {
+        websocketManager.removeClient(shop); // Remove the client on disconnection
+        console.log(`Client for shop ${shop} disconnected`);
     });
-
 
     ws.on('error', (error) => {
         console.error(`WebSocket error for ${shop}:`, error);
     });
+
 });
-
-
-
 
 
 // Redis connection
