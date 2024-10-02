@@ -74,7 +74,7 @@ const redisOptions = {
 };
 
 
-await runScheduledUpdateTask(407);  // Run the product update task
+runScheduledUpdateTask(407);  // Run the product update task
 
 console.log("redisConnectionUrl:: ",redisConnectionUrl);
 const redis = new Redis(redisConnectionUrl, redisOptions);
