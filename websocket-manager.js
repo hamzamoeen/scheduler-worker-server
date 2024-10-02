@@ -1,3 +1,5 @@
+const WebSocket = require('ws'); // Import ws for WebSocket in Node.js
+
 const clients = new Map();  // Map to store active WebSocket connections by shop identifier
 
 module.exports = {
