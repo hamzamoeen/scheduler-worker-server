@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 app.use(limiter);
 
 app.get('/', (req, res) => {
-    runScheduledUpdateTask(407);  // Run the product update task
+    runScheduledUpdateTask(408);  // Run the product update task
     res.send('Hello, World!');
 });
 
