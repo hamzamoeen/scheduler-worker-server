@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/:scheduler_id/scheduler_type/:type', async (req, res) => {
+app.post('/:scheduler_id/scheduler-type/:type', async (req, res) => {
     try {
         const schedulerId = req.params?.scheduler_id;
         const type = req.params?.type;
