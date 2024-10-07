@@ -33,6 +33,17 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
+app.get('/:scheduler_id', async (req, res) => {
+    const schedulerId = req.params?.scheduler_id;
+    if(schedulerId){
+        await runScheduledUpdateTask(schedulerId);
+        res.send(`Scheduled update task for scheduler ID: ${schedulerId} has been triggered!`);
+    }
+    res.send(`There is no scheduler found.!`);
+
+});
+
+
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);
 // });
