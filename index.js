@@ -35,8 +35,12 @@ app.get('/', (req, res) => {
 
 
 app.post('/', async (req, res) => {
+
+    console.log("req.body req.body", req.body);
+    const { scheduler_id, type } = req.body;
+    
     try {
-        const { scheduler_id, type } = req.body;
+
 
         if(scheduler_id && type){
             if (type == 'scheduleUpdateJob') {
