@@ -9,6 +9,11 @@ const { getSchedulerJobByID, runSchedulerJob, runRevertSchedulerJob } = require(
 const app = express();
 const rateLimit = require('express-rate-limit');
 
+// Trust proxy (needed for rate limiting with proxies)
+app.set('trust proxy', 1);
+
+// Middleware to parse JSON body
+app.use(express.json());
 
 
 // require('./schedulers');
