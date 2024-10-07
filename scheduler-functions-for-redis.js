@@ -238,7 +238,7 @@ async function getSchedulerJobByID(jobId) {
     try {
         let sql = `SELECT * FROM schedulers where id = ${jobId}`;
         let [results] = await pool.execute(sql);
-        //console.log('SQL Results:', results);
+        console.log('SQL Results:', results);
         return results;
     } catch (err) {
         console.error('Error getting data, transaction rolled back:', err);
