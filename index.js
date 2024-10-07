@@ -34,21 +34,21 @@ app.get('/', (req, res) => {
 });
 
 
-app.post('/:scheduler_id/scheduler-type/:type', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
-        const schedulerId = req.params?.scheduler_id;
-        const type = req.params?.type;
-        if(schedulerId && type){
+        const { scheduler_id, type } = req.body;
+
+        if(scheduler_id && type){
             if (type == 'scheduleUpdateJob') {
-                console.log(`Manually Processing scheduled update for job ${schedulerId} at ${new Date().toISOString()}`);
-                await runScheduledUpdateTask(schedulerId);  // Run the product update task
+                console.log(`Manually Processing scheduled update for job ${scheduler_id} at ${new Date().toISOString()}`);
+                await runScheduledUpdateTask(scheduler_id);  // Run the product update task
             }
     
             if (type == 'revertUpdateJob') {
-                console.log(`Manually Processing revert for job ${schedulerId} at ${new Date().toISOString()}`);
-                await runRevertUpdateTask(schedulerId);  // Run the revert task
+                console.log(`Manually Processing revert for job ${scheduler_id} at ${new Date().toISOString()}`);
+                await runRevertUpdateTask(scheduler_id);  // Run the revert task
             }
-            res.send(`Scheduled update task for scheduler ID: ${schedulerId} has been triggered!`);
+            res.send(`Scheduled update task for scheduler ID: ${scheduler_id} has been triggered!`);
         }
     } catch (error) {
         // Make sure not to call res.send again here
