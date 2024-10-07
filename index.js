@@ -33,15 +33,21 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
-app.get('/:scheduler_id', async (req, res) => {
-    const schedulerId = req.params?.scheduler_id;
-    if(schedulerId){
-        await runScheduledUpdateTask(schedulerId);
-        res.send(`Scheduled update task for scheduler ID: ${schedulerId} has been triggered!`);
-    }
-    res.send(`There is no scheduler found.!`);
 
+app.get('/:scheduler_id', async (req, res) => {
+    try {
+        const schedulerId = req.params?.scheduler_id;
+        if(schedulerId){
+            await runScheduledUpdateTask(schedulerId);
+            res.send(`Scheduled update task for scheduler ID: ${schedulerId} has been triggered!`);
+        }
+    } catch (error) {
+        // Make sure not to call res.send again here
+        console.error(error);
+        res.status(500).send('Error occurred');
+    }
 });
+
 
 
 // app.listen(PORT, () => {
