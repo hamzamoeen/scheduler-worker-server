@@ -34,11 +34,20 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/:scheduler_id', async (req, res) => {
+app.get('/:scheduler_id/scheduler_type/:type', async (req, res) => {
     try {
         const schedulerId = req.params?.scheduler_id;
-        if(schedulerId){
-            await runScheduledUpdateTask(schedulerId);
+        const type = req.params?.type;
+        if(schedulerId && type){
+            if (type == 'scheduleUpdateJob') {
+                console.log(`Manually Processing scheduled update for job ${jobId} at ${new Date().toISOString()}`);
+                await runScheduledUpdateTask(jobId);  // Run the product update task
+            }
+    
+            if (type == 'revertUpdateJob') {
+                console.log(`Manually Processing revert for job ${jobId} at ${new Date().toISOString()}`);
+                await runRevertUpdateTask(jobId);  // Run the revert task
+            }
             res.send(`Scheduled update task for scheduler ID: ${schedulerId} has been triggered!`);
         }
     } catch (error) {
