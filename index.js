@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 const WebSocket = require('ws');
 const websocketManager = require('./websocket-manager'); // Import the WebSocket manager
 
@@ -33,13 +35,31 @@ const PORT = process.env.PORT || 3000;
 // Apply the rate limiter to all requests
 app.use(limiter);
 
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+
+    if (!token) {
+        return res.status(403).send('Token is required');
+    }
+
+    let secretKey = process.env.SECRET_KEY;
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).send('Invalid token');
+        }
+        req.sessionData = decoded; // Attach session data to request
+        next();
+    });
+};
+
+
 app.get('/', (req, res) => {
     runScheduledUpdateTask(408);  // Run the product update task
     res.send('Hello, World!');
 });
 
 
-app.post('/', async (req, res) => {
+app.post('/', verifyToken ,async (req, res) => {
     
     try {
 
