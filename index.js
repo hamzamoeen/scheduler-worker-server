@@ -37,8 +37,6 @@ app.use(limiter);
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
-    console.log("token token token", token);
-    console.log("req.headers req.headers", req.headers);
 
     if (!token) {
         return res.status(403).send('Token is required');
