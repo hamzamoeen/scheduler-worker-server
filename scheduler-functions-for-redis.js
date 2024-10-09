@@ -277,23 +277,152 @@ async function deleteScheduleById(session, scheduler_id) {
 
 }
 
+/// old code at 09/OCT/2024
+// async function runSchedulerJob(session, scheduler_id) {
+
+//     let {shop} = session;
+
+//     let errorOccurred = false;
+//     if (!scheduler_id) {
+//         console.log("Scheduler ID required!");
+//         throw new Error("Scheduler ID is required.");
+//     }
+
+//     let scheduler = await getSchedulerJobs(session, scheduler_id);
+//     if (!scheduler?.length) {
+//         throw new Error("No Scheduler Found.");
+//     }
+
+//     await updateSchedulerStatus(scheduler_id, { scheduler_status: 'inProgress' });
+
+//     // Once job is processed, send a message to the shop via WebSocket
+//     let message = {
+//         type: 'job-update',
+//         jobId: scheduler_id,
+//         status: "inProgress",
+//         msg: "Scheduler Status has been updated"
+//     };
+//     websocketManager.sendMessageToShop(shop, message);
+
+//     try {
+//         console.log("Job Started");
+//         // Once job is processed, send a message to the shop via WebSocket
+//         message = {
+//             type: 'job-update',
+//             jobId: scheduler_id,
+//             status: "inProgress",
+//             msg: "Job Started"
+//         };
+//         websocketManager.sendMessageToShop(shop, message);
+
+
+//         let scheduledProducts = scheduler[0].scheduledProducts;
+
+//         if (scheduledProducts?.length) {
+//             const uniqueProductIds = await uniqueByShopifyProductId(scheduledProducts);
+//             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
+//                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedTags, 'add', batchSize, resumeFromId);
+//                 message = {
+//                     type: 'job-update',
+//                     jobId: scheduler_id,
+//                     status: "inProgress",
+//                     msg: "Tags for Products Updated."
+//                 };
+//                 websocketManager.sendMessageToShop(shop, message);        
+
+//             });
+//             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
+//                 await updateVariantPrice(session, scheduledProducts, 'update', batchSize, resumeFromId);
+//                 message = {
+//                     type: 'job-update',
+//                     jobId: scheduler_id,
+//                     status: "inProgress",
+//                     msg: "Variant Price Updated."
+//                 };
+//                 websocketManager.sendMessageToShop(shop, message);        
+//             });
+//             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
+//                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedRemovedTags, 'remove', batchSize, resumeFromId);
+//                 message = {
+//                     type: 'job-update',
+//                     jobId: scheduler_id,
+//                     status: "inProgress",
+//                     msg: "Removing of Update Tag has been done."
+//                 };
+//                 websocketManager.sendMessageToShop(shop, message);        
+//             });
+//         }
+
+//         if (scheduler[0].chooseTheTheme && scheduler[0].themeChangeWhenThisPriceChangeIsTriggered) {
+//             await publishAndRevertTheme(session, scheduler[0].chooseTheTheme);
+//             message = {
+//                 type: 'job-update',
+//                 jobId: scheduler_id,
+//                 status: "inProgress",
+//                 msg: "Theme has been updated."
+//             };
+//             websocketManager.sendMessageToShop(shop, message);        
+
+//         }
+
+//         if (scheduler[0]?.revertToOriginalPricesLater && scheduler[0]?.revertDate !== '') {
+//             await updateSchedulerStatus(scheduler_id, { scheduler_status: 'reversionScheduled' });
+//         } else {
+//             await updateSchedulerStatus(scheduler_id, { scheduler_status: 'scheduledCompleted' });
+//         }
+
+//         message = {
+//             type: 'job-update',
+//             jobId: scheduler_id,
+//             status: "completed",
+//             msg: "Job has been completed."
+//         };
+//         websocketManager.sendMessageToShop(shop, message);        
+
+//         console.log("Job Completed");
+//     } catch (error) {
+
+//         message = {
+//             type: 'job-update',
+//             jobId: scheduler_id,
+//             status: "error",
+//             msg: "Job has not been completed. Error occured."
+//         };
+//         websocketManager.sendMessageToShop(shop, message);        
+
+//         console.error("Error in runSchedulerJob:", error);
+//         errorOccurred = true;
+//         await updateSchedulerStatus(scheduler_id, { scheduler_status: 'Pending Retry' });
+//         throw error;
+//     }
+
+//     // Only send email if no error occurred and not in retry status
+//     if (!errorOccurred && scheduler[0].scheduler_status !== 'Pending Retry') {
+//         const testEmailData = {
+//             shopEmailAddress: "expertifies@gmail.com",
+//             jobName: scheduler[0].jobName || "Job Name",
+//             jobOperation: 'Completed',
+//             scheduler: scheduler[0],
+//         };
+//         await sendEmailNotification(testEmailData);
+//     }
+
+//     return scheduler;
+// }
+
+
 async function runSchedulerJob(session, scheduler_id) {
-
     let {shop} = session;
-
     let errorOccurred = false;
     if (!scheduler_id) {
         console.log("Scheduler ID required!");
         throw new Error("Scheduler ID is required.");
     }
-
     let scheduler = await getSchedulerJobs(session, scheduler_id);
     if (!scheduler?.length) {
         throw new Error("No Scheduler Found.");
     }
-
     await updateSchedulerStatus(scheduler_id, { scheduler_status: 'inProgress' });
-
     // Once job is processed, send a message to the shop via WebSocket
     let message = {
         type: 'job-update',
@@ -302,7 +431,6 @@ async function runSchedulerJob(session, scheduler_id) {
         msg: "Scheduler Status has been updated"
     };
     websocketManager.sendMessageToShop(shop, message);
-
     try {
         console.log("Job Started");
         // Once job is processed, send a message to the shop via WebSocket
@@ -313,88 +441,55 @@ async function runSchedulerJob(session, scheduler_id) {
             msg: "Job Started"
         };
         websocketManager.sendMessageToShop(shop, message);
-
-
         let scheduledProducts = scheduler[0].scheduledProducts;
-
         if (scheduledProducts?.length) {
             const uniqueProductIds = await uniqueByShopifyProductId(scheduledProducts);
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedTags, 'add', batchSize, resumeFromId);
-                message = {
-                    type: 'job-update',
-                    jobId: scheduler_id,
-                    status: "inProgress",
-                    msg: "Tags for Products Updated."
-                };
-                websocketManager.sendMessageToShop(shop, message);        
-
             });
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateVariantPrice(session, scheduledProducts, 'update', batchSize, resumeFromId);
-                message = {
-                    type: 'job-update',
-                    jobId: scheduler_id,
-                    status: "inProgress",
-                    msg: "Variant Price Updated."
-                };
-                websocketManager.sendMessageToShop(shop, message);        
             });
             await retryWithBatchReduction(async (batchSize, resumeFromId) => {
                 await updateTagsForProducts(session, uniqueProductIds, scheduler[0].selectedRemovedTags, 'remove', batchSize, resumeFromId);
-                message = {
-                    type: 'job-update',
-                    jobId: scheduler_id,
-                    status: "inProgress",
-                    msg: "Removing of Update Tag has been done."
-                };
-                websocketManager.sendMessageToShop(shop, message);        
             });
         }
-
         if (scheduler[0].chooseTheTheme && scheduler[0].themeChangeWhenThisPriceChangeIsTriggered) {
             await publishAndRevertTheme(session, scheduler[0].chooseTheTheme);
+        }
+        if (scheduler[0]?.revertToOriginalPricesLater && scheduler[0]?.revertDate !== '') {
+            await updateSchedulerStatus(scheduler_id, { scheduler_status: 'reversionScheduled' });
             message = {
                 type: 'job-update',
                 jobId: scheduler_id,
-                status: "inProgress",
-                msg: "Theme has been updated."
+                status: "reversionScheduled",
+                msg: "Job has been completed."
             };
-            websocketManager.sendMessageToShop(shop, message);        
-
-        }
-
-        if (scheduler[0]?.revertToOriginalPricesLater && scheduler[0]?.revertDate !== '') {
-            await updateSchedulerStatus(scheduler_id, { scheduler_status: 'reversionScheduled' });
+            websocketManager.sendMessageToShop(shop, message);
         } else {
             await updateSchedulerStatus(scheduler_id, { scheduler_status: 'scheduledCompleted' });
+            message = {
+                type: 'job-update',
+                jobId: scheduler_id,
+                status: "scheduledCompleted",
+                msg: "Job has been completed."
+            };
+            websocketManager.sendMessageToShop(shop, message);
         }
-
-        message = {
-            type: 'job-update',
-            jobId: scheduler_id,
-            status: "completed",
-            msg: "Job has been completed."
-        };
-        websocketManager.sendMessageToShop(shop, message);        
-
         console.log("Job Completed");
     } catch (error) {
-
         message = {
             type: 'job-update',
             jobId: scheduler_id,
             status: "error",
             msg: "Job has not been completed. Error occured."
         };
-        websocketManager.sendMessageToShop(shop, message);        
-
+        websocketManager.sendMessageToShop(shop, message);
         console.error("Error in runSchedulerJob:", error);
         errorOccurred = true;
         await updateSchedulerStatus(scheduler_id, { scheduler_status: 'Pending Retry' });
         throw error;
     }
-
     // Only send email if no error occurred and not in retry status
     if (!errorOccurred && scheduler[0].scheduler_status !== 'Pending Retry') {
         const testEmailData = {
@@ -405,7 +500,6 @@ async function runSchedulerJob(session, scheduler_id) {
         };
         await sendEmailNotification(testEmailData);
     }
-
     return scheduler;
 }
 
@@ -456,6 +550,7 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 async function runRevertSchedulerJob(session, scheduler_id) {
+    let {shop} = session;
     let errorOccured = false;
     if (!scheduler_id) {
         throw new Error("Scheduler ID is required.");
@@ -468,6 +563,15 @@ async function runRevertSchedulerJob(session, scheduler_id) {
     try {
         //console.log("Scheduler Data ---->>> runRevertSchedulerJob() ", scheduler[0]);
         console.log("Reversion Started");
+
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "reversionInProgress",
+            msg: "Reversion Started"
+        };
+        websocketManager.sendMessageToShop(shop, message);
+
         let scheduledProducts = scheduler[0].scheduledProducts;
 
         if (scheduledProducts?.length) {
@@ -563,14 +667,32 @@ async function runRevertSchedulerJob(session, scheduler_id) {
 
         await updateSchedulerStatus(scheduler_id, { scheduler_status: 'completed' });
         errorOccured = false; // Ensure error is reset on success
+
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "completed",
+            msg: "Reversion Completed"
+        };
+        websocketManager.sendMessageToShop(shop, message); 
+
         console.log("Reversion Completed");
     } catch (error) {
         console.error("Error in runRevertSchedulerJob:", error);
+
+        message = {
+            type: 'job-update',
+            jobId: scheduler_id,
+            status: "Pending Retry",
+            msg: "An Error occured, Need to run this job manually."
+        };
+        websocketManager.sendMessageToShop(shop, message); 
+
         errorOccured = true;
         await updateSchedulerStatus(scheduler_id, { scheduler_status: 'Pending Retry' });
         throw error;
     }
-
+    
     // Only send email if no error occurred and not in retry status
     if (!errorOccured && scheduler[0].scheduler_status !== 'Pending Retry') {
         const testEmailData = {
