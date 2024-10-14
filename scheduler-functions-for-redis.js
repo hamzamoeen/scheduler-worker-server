@@ -567,7 +567,7 @@ async function runRevertSchedulerJob(session, scheduler_id) {
         message = {
             type: 'job-update',
             jobId: scheduler_id,
-            status: "reversionInProgress",
+            status: "reversionInprogress",
             msg: "Reversion Started"
         };
         websocketManager.sendMessageToShop(shop, message);
